@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# causes the shell to exit if any subcommand or pipeline returns a non-zero status
+set -e
+
+app='Zarafa WebApp'
+appname=`echo -n zc;echo 'p'`
+sources=`echo -n $appname;echo '-7.2.1-51838-ubuntu-14.04-x86_64-supported'`
+
+# Retrieve arguments
+domain=$(sudo yunohost app setting $app domain)
+path=$(sudo yunohost app setting $app path)
+
+# Remove trailing "/" for next commands
+path=${path%/}
+
+# Use 'zarafa' as database name and user \
+db_user=zarafa
+
+# Copy source files
+final_path=/var/www/$app
+sudo mkdir -p $final_path
+sudo mkdir -p $data_path
+old_pwd=$(pwd)
+sudo chmod -R u=rwX,g=rwX,o=rX $final_path
+sudo chmod -R u=rwX,g=rwX,o= $data_path
+cd $final_path
+sudo mkdir -p old_apps
+sudo rm -Rf old_apps/*
+sudo mv apps/* old_apps \
+    || echo "No app to backup"
+shopt -s extglob
+sudo rm -Rf !(old_apps|data|config|themes)
+shopt -u extglob
+cd $old_pwd
+sudo cp -a ../tmp/$appname/. $final_path/
+cd $final_path/old_apps
+sudo rm -Rf $(ls $final_path/apps)
+cd $old_pwd
+sudo cp -a $final_path/old_apps/* $final_path/apps/ \
+    || echo "No app to restore"
+
+# Set permissions to app files
+# you may need to make some file and/or directory writeable by www-data (nginx user)
+sudo chown -R root:root $final_path
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx.conf.d/server {
+ listen 0.0.0.0:HTTPS_PORT ssl;
+ server_name webapp.zarafa.local;
+ ssl on;
+ ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+ ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+ ssl_session_cache shared:SSL:1m;
+ ssl_session_timeout 5m;
+ ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+ ssl_ciphers ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA256:DHE-DSS-AES128-SHA256:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256:AES128:AES:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK ;
+ ssl_prefer_server_ciphers on;
+ #
+ # ssl_dhparam require you to create a dhparam.pem, this takes a long time
+ #ssl_dhparam /etc/ssl/certs/dhparam.pem;
+ #
+ root /usr/share/zarafa-webapp/;
+  
+ location ~* \.php$ {
+  include fastcgi_params;
+  fastcgi_pass php;
+  fastcgi_index index.php;
+  # WebApp's php settings as taken WebApp Apache config
+  fastcgi_param PHP_VALUE "
+    post_max_size=31M
+    upload_max_filesize=30M
+    short_open_tag=on
+  ";
+ }
+ # deny access to .htaccess files
+ #location ~ /\.ht {
+ # deny all;
+ #}
+ 
+ # CSS and Javascript
+ #location ~* \.(?:css|js)$ {
+ # expires 1y;
+ # access_log off;
+ # add_header Cache-Control "public";
+ #}
+
+ # All (static) resources set to 2 months expiration time.
+ #location ~* \.(?:jpg|gif|png)$ {
+ # expires 2M;
+ # access_log off;
+ # add_header Cache-Control "public";
+ #}
+ 
+ # enable gzip compression
+ gzip on;
+ gzip_min_length  1100;
+ gzip_buffers  4 32k;
+ gzip_types    text/plain application/x-javascript text/xml text/css application/json;
+ gzip_vary on;
+}
+map $http_upgrade $connection_upgrade {
+ default upgrade;
+ '' close;
+}
+
+
+# If app is public, add url to SSOWat conf as skipped_uris
+if [ "$is_public" = "Yes" ];
+then
+  # See install script
+  sudo yunohost app setting $app unprotected_uris -v "/"
+  # Remove old settings
+  sudo yunohost app setting $app skipped_uris -d
+fi
+
+# Restart services
+sudo service nginx reload
+sudo yunohost app ssowatconf
+
