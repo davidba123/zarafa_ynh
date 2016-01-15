@@ -3,43 +3,24 @@
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
 
-app='Zarafa WebApp'
-appname=`echo -n zc;echo 'p'`
-sources=`echo -n $appname;echo '-7.2.1-51838-ubuntu-14.04-x86_64-supported'`
+app=zarafa
 
 # Retrieve arguments
-domain=$1
-path=$2
+path=$1
 
 # Check domain/path availability
-sudo yunohost app checkurl $domain$path -a $app \
-	|| (echo "Path not available: $domain$path" && exit 1)
+sudo yunohost app checkurl $path -a $app \
+	|| (echo "Path not available: $path" && exit 1)
 
-# Copy source files
-final_path=/var/www/$app
-sudo mkdir -p $final_path
-sudo cp -a ../sources/. $final_path
-sudo mkdir -p §data_path
-sudo cp -a ../tmp/$appname/. $final_path/
-sudo cp -a ../conf/ow-setup $final_path/ow-setup
-sudo cp ../conf/nginx.conf /etc/nginx/conf.ddomain.d/$app.conf
-sudo cp ../conf/php-fpm.conf /etc/php5/fpm/pool.d/$app.conf
-sudo ls /usr/lib/php5/2*/ | grep apc.so \
-  && sudo cp ../conf20-apc.ini /etc/php5/cli/conf.d/20-apc.ini \
-  || sudo cp ../conf/mount.json $data_path
-sudo chown -hR $app:www-data $final_path
-sudo chown -hR $app:www-data $data_path
-sudo chown $app:www-data /home/yunohost.app/$app
-sudo chmod 755 /home/yunohost.app
-sudo chmod -R u=rwX,g=rwX,o=rX $final_path
-sudo chmod -R u=rwX,g=rwX,o= $data_path
+# TODO download and install zarafa packages
 
-# Needed for Jessie/PHP5.6 compatibility
-sudo sed -i "s/;always_populate_raw/always_populate_raw/" /etc/php5/cli/php.ini
+# TODO set mysql password in server.cfg
 
-# Set permissions to app files
-# you may need to make some file and/or directory writeable by www-data (nginx user)
-sudo chown -R www-data: $final_path
+# TODO set ldap settign in ldap.cfg
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
 
 # If your app use a MySQL database you can use these lines to bootstrap
 # a database, an associated user and save the password in app settings
@@ -47,114 +28,10 @@ db_pwd=$(openssl rand -hex 15)
 sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# Modify Nginx configuration file and copy it to Nginx conf directory
-sed -i "s@PATHTOCHANGE@$path@g" ../conf/nginx.conf
-sed -i "s@ALIASTOCHANGE@$final_path/@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx.conf.d/server {
- listen 0.0.0.0:HTTPS_PORT ssl;
- server_name webapp.zarafa.local;
- ssl on;
- ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
- ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
- ssl_session_cache shared:SSL:1m;
- ssl_session_timeout 5m;
- ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
- ssl_ciphers ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA256:DHE-DSS-AES128-SHA256:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256:AES128:AES:DES-CBC3-SHA:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK ;
- ssl_prefer_server_ciphers on;
- #
- # ssl_dhparam require you to create a dhparam.pem, this takes a long time
- #ssl_dhparam /etc/ssl/certs/dhparam.pem;
- #
- root /usr/share/zarafa-webapp/;
-  
- location ~* \.php$ {
-  include fastcgi_params;
-  fastcgi_pass php;
-  fastcgi_index index.php;
-  # WebApp's php settings as taken WebApp Apache config
-  fastcgi_param PHP_VALUE "
-    post_max_size=31M
-    upload_max_filesize=30M
-    short_open_tag=on
-  ";
- }
- # deny access to .htaccess files
- #location ~ /\.ht {
- # deny all;
- #}
- 
- # CSS and Javascript
- #location ~* \.(?:css|js)$ {
- # expires 1y;
- # access_log off;
- # add_header Cache-Control "public";
- #}
-
- # All (static) resources set to 2 months expiration time.
- #location ~* \.(?:jpg|gif|png)$ {
- # expires 2M;
- # access_log off;
- # add_header Cache-Control "public";
- #}
- 
- # enable gzip compression
- gzip on;
- gzip_min_length  1100;
- gzip_buffers  4 32k;
- gzip_types    text/plain application/x-javascript text/xml text/css application/json;
- gzip_vary on;
-}
-map $http_upgrade $connection_upgrade {
- default upgrade;
- '' close;
-}
-
-# If app is public, add url to SSOWat conf as skipped_uris
-if [ "$is_public" = "Yes" ];
-then
-  # unprotected_uris allows SSO credentials to be passed anyway.
-  sudo yunohost app setting $app unprotected_uris -v "/"
-fi
-
-# The parameter $1 is the uncompressed restore directory location
-backup_dir=$1/apps/$app
-
-# Restore sources & data
-sudo cp -a $backup_dir/sources/. /var/www/$app
-
-# Restore permissions to app files
-# you may need to make some file and/or directory writeable by www-data (nginx user)
-sudo chown -R root:root $final_path
-
-# Restore mysql database if needed
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
-sudo mysql -u $app -p$db_pwd $app < $backup_dir/$app.dmp
-
-# Restore Nginx and YunoHost parameters
-sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
-domain=$(sudo yunohost app setting $app domain)
-sudo cp -a $backup_dir/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+# Copy source files
+# TODO change location of WebApp to the value given in $path
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$app.conf
 
 # Restart webserver
 sudo service nginx reload
-
-# Restart services
-sudo service nginx reload
 sudo yunohost app ssowatconf
-
-# The parameter $1 is the backup directory location
-# which will be compressed afterward
-backup_dir=$1/apps/$app
-sudo mkdir -p $backup_dir
-
-# Backup sources & data
-sudo cp -a /var/www/$app/. $backup_dir/sources
-
-# Backup mysql database if needed
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
-sudo mysqldump -u $app -p$db_pwd $app > $backup_dir/$app.dmp
-
-# Copy Nginx and YunoHost parameters to make the script "standalone"
-sudo cp -a /etc/yunohost/apps/$app/. $backup_dir/yunohost
-domain=$(sudo yunohost app setting $app domain)
-sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $backup_dir/nginx.conf
