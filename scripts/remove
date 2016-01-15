@@ -1,33 +1,19 @@
 #!/bin/bash
 
-app='Zarafa WebApp'
+app=zarafa
 
 # Retrieve arguments
+db=zarafa
 db_user=zarafa
-db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
-sudo yunohost app initdb $db_user -p $db_pwd -s $(readlink -e ../sources/SQL/mysql.initial.sql)
-domain=$(sudo yunohost app setting $app domain)
-path=$(sudo yunohost app setting $app path)
 
-# Remove sources
-sudo rm -rf /var/www/$app
-sudo rm -rf /home/yunohost.app/owncloud
+# TODO remove all zarafa packages
 
 # Remove configuration files
-sudo rm -f /etc/nginx/conf.d/$domain.d/$app.conf
-sudo rm -f /etc/php5/fpm/pool.d/owncloud.conf
-for i in $(ls /home)
-do
-    if [[ ! $i == yunohost.* ]];
-    then
-        sudo setfacl -x g:owncloud:rwx > /dev/null 2>&1
-    fi
-done
-sudo killall p
+sudo rm -f /etc/nginx/conf.d/$app.conf
 
 # If a database is used, remove it
 db_pwd=$(sudo cat /etc/yunohost/mysql)
-mysql -u root -p$root_pwd -e "DROP DATABASE $app ; DROP USER $app@localhost ;"
+mysql -u root -p$db_pwd -e "DROP DATABASE $db ; DROP USER $db_user@localhost ;"
 
 # Restart services
 sudo service nginx reload

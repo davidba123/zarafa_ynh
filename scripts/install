@@ -3,7 +3,7 @@
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
 
-app='Zarafa WebApp'
+app=zarafa
 
 # Retrieve arguments
 path=$1
@@ -12,8 +12,15 @@ path=$1
 sudo yunohost app checkurl $path -a $app \
 	|| (echo "Path not available: $path" && exit 1)
 
-# Copy source files
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$app.conf
+# TODO download and install zarafa packages
+
+# TODO set mysql password in server.cfg
+
+# TODO set ldap settign in ldap.cfg
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
 
 # If your app use a MySQL database you can use these lines to bootstrap
 # a database, an associated user and save the password in app settings
@@ -21,51 +28,10 @@ db_pwd=$(openssl rand -hex 15)
 sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# If app is public, add url to SSOWat conf as skipped_uris
-if [ "$is_public" = "Yes" ]; then
-  # unprotected_uris allows SSO credentials to be passed anyway.
-  sudo yunohost app setting $app unprotected_uris -v "/"
-fi
-
-# The parameter $1 is the uncompressed restore directory location
-backup_dir=$1/apps/$app
-
-# Restore sources & data
-sudo cp -a $backup_dir/sources/. /var/www/$app
-
-# Restore permissions to app files
-# you may need to make some file and/or directory writeable by www-data (nginx user)
-sudo chown -R root:root $final_path
-
-# Restore mysql database if needed
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
-sudo mysql -u $app -p$db_pwd $app < $backup_dir/$app.dmp
-
-# Restore Nginx and YunoHost parameters
-sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
-domain=$(sudo yunohost app setting $app domain)
-sudo cp -a $backup_dir/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+# Copy source files
+# TODO change location of WebApp to the value given in $path
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$app.conf
 
 # Restart webserver
 sudo service nginx reload
-
-# Restart services
-sudo service nginx reload
 sudo yunohost app ssowatconf
-
-# The parameter $1 is the backup directory location
-# which will be compressed afterward
-backup_dir=$1/apps/$app
-sudo mkdir -p $backup_dir
-
-# Backup sources & data
-sudo cp -a /var/www/$app/. $backup_dir/sources
-
-# Backup mysql database if needed
-db_pwd=$(sudo yunohost app setting $app mysqlpwd)
-sudo mysqldump -u $app -p$db_pwd $app > $backup_dir/$app.dmp
-
-# Copy Nginx and YunoHost parameters to make the script "standalone"
-sudo cp -a /etc/yunohost/apps/$app/. $backup_dir/yunohost
-domain=$(sudo yunohost app setting $app domain)
-sudo cp -a /etc/nginx/conf.d/$domain.d/$app.conf $backup_dir/nginx.conf
