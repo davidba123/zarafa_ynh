@@ -22,7 +22,7 @@ path=$1
 
 # Check domain/path availability
 # sudo yunohost app checkurl $path -a $app \
-	|| (echo "Path not available: $path" && exit 1)
+#	|| (echo "Path not available: $path" && exit 1)
 
 # TODO download and install zarafa packages
 mkdir -p /root/packages \
