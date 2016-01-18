@@ -2,13 +2,13 @@
     "name": "Zarafa WebApp",
     "id": "zarafawebapp",
     "description": {
-        "en": "The Zarafa WebApp",
+        "en": "The Zarafa WebApp"
     },
     "license": "free",
     "maintainer": {
         "name": "davidba123",
         "email": "mail@example.com",
-        "url": "http://zarafa.com",
+        "url": "http://zarafa.com"
     },
     "multi_instance": "false",
     "services": [
@@ -24,11 +24,11 @@
                 "name": "path",
                 "type": "path",
                 "ask": {
-                    "en": "Choose a path for Zarafa WebApp",
-
+                    "en": "Choose a path for Zarafa WebApp"
                 },
                 "example": "/webapp",
                 "default": "/webapp"
             }
       ]
+}
 }
