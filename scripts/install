@@ -29,7 +29,7 @@ mkdir -p /home/admin/packages \
         && wget --no-check-certificate --quiet \
         $DOWNLOADURL -O- | tar xz -C /home/admin/packages --strip-components=1
 cd /home/admin/packages
-apt-ftparchive packages . | gzip -9c > Packages.gz && sudo tee "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list
+apt-ftparchive packages . | gzip -9c > Packages.gz && sudo sh -c '"deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
 
 # Create password
 db_pwd=$(openssl rand -hex 15)
