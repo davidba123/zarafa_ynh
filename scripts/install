@@ -36,7 +36,7 @@ createrepo(){
 	apt-ftparchive packages . | gzip -9c > Packages.gz \
 	&& sudo sh -c 'echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
 }
-createrepo DOWNLOADURL$
+createrepo $DOWNLOADURL
 sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated zarafa-server zarafa-spooler zarafa-dagent
 
 # Define database user and create password
