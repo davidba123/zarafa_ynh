@@ -39,7 +39,7 @@ db_user=zarafa
 
 #Initialize database and store mysql password for upgrade
 sudo yunohost app initdb $db_user -p $db_pwd
-sudo yunohost app setting $app mysqlpwd -v $db_pwd
+# sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # TODO set mysql password in server.cfg
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
