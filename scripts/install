@@ -33,7 +33,7 @@ apt-ftparchive packages . | gzip -9c > Packages.gz && sudo sh -c 'echo "deb file
 
 # Create password
 db_pwd=$(openssl rand -hex 15)
-sudo yunohost app initdb $da_user -p $db_pwd
+sudo yunohost app initdb $app -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # TODO set mysql password in server.cfg
