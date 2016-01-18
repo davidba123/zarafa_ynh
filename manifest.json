@@ -1,14 +1,14 @@
 {
     "name": "Zarafa WebApp",
-    "id": "zarafawebapp",
+    "id": "zarafa",
     "description": {
         "en": "The Zarafa WebApp"
     },
+    "url": "http://zarafa.com",
     "license": "free",
     "maintainer": {
         "name": "davidba123",
-        "email": "mail@example.com",
-        "url": "http://zarafa.com"
+        "email": "mail@example.com"
     },
     "multi_instance": "false",
     "services": [
