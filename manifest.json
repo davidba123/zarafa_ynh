@@ -4,16 +4,17 @@
     "description": {
         "en": "The Zarafa WebApp",
     },
-    "url": "http://zarafa.com",
+    "license": "free",
     "maintainer": {
         "name": "David",
-        "email": "mail@example.com"
+        "email": "mail@example.com",
+        "url": "http://zarafa.com",
     },
     "multi_instance": "false",
     "services": [
         "nginx",
         "php5-fpm",
-        "mysql"
+        "mysql",
         "postfix"
     ],
     "arguments": {
