@@ -21,7 +21,7 @@ app=zarafa
 path=$1
 
 # Check domain/path availability
-sudo yunohost app checkurl $path -a $app \
+# sudo yunohost app checkurl $path -a $app \
 	|| (echo "Path not available: $path" && exit 1)
 
 # TODO download and install zarafa packages
