@@ -3,6 +3,10 @@
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
 
+# TODO check for debain version and arch
+# app will only run on one debian 64bit and download packages according to the version
+# read -d . VERSION < /etc/debian_version
+
 app=zarafa
 
 # Retrieve arguments
