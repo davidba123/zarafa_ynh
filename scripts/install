@@ -25,11 +25,11 @@ path=$1
 #	|| (echo "Path not available: $path" && exit 1)
 
 # TODO download and install zarafa packages
-mkdir -p /root/packages \
+mkdir -p /home/admin/packages \
         && wget --no-check-certificate --quiet \
-        $DOWNLOADURL -O- | tar xz -C /root/packages --strip-components=1
-cd /root/packages
-apt-ftparchive packages . | gzip -9c > Packages.gz && echo "deb file:/root/packages ./" > /etc/apt/sources.list.d/zarafa.list
+        $DOWNLOADURL -O- | tar xz -C /home/admin/packages --strip-components=1
+cd /home/admin/packages
+apt-ftparchive packages . | gzip -9c > Packages.gz && echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list
 
 # Create password
 db_pwd=$(openssl rand -hex 15)
