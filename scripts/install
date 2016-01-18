@@ -5,7 +5,15 @@ set -e
 
 # TODO check for debain version and arch
 # app will only run on one debian 64bit and download packages according to the version
-# read -d . VERSION < /etc/debian_version
+read -d . VERSION < /etc/debian_version
+case "$VERSION" in
+	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-7.0-x86_64-supported.tar.gz;;
+	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz;;
+esac
+
+if [ $(uname -m) != "x86_64" ] ; then
+exit 1
+fi 
 
 app=zarafa
 
@@ -17,20 +25,25 @@ sudo yunohost app checkurl $path -a $app \
 	|| (echo "Path not available: $path" && exit 1)
 
 # TODO download and install zarafa packages
+mkdir -p /root/packages \
+        && wget --no-check-certificate --quiet \
+        $DOWNLOADURL -O- | tar xz -C /root/packages --strip-components=1
+cd /root/packages
+apt-ftparchive packages . | gzip -9c > Packages.gz && echo "deb file:/root/packages ./" > /etc/apt/sources.list.d/zarafa.list
+
+# Create password
+db_pwd=$(openssl rand -hex 15)
+sudo yunohost app initdb $app -p $db_pwd
+sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # TODO set mysql password in server.cfg
-
-# TODO set ldap settign in ldap.cfg
+sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
+sudo cp ../conf/server.cfg /etc/zarafa/
+sudo cp ../conf/ldap.cfg /etc/zarafa/
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
-
-# If your app use a MySQL database you can use these lines to bootstrap
-# a database, an associated user and save the password in app settings
-db_pwd=$(openssl rand -hex 15)
-sudo yunohost app initdb $app -p $db_pwd
-sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # Copy source files
 # TODO change location of WebApp to the value given in $path
