@@ -15,7 +15,7 @@ if [ $(uname -m) != "x86_64" ] ; then
 exit 1
 fi 
 
-app=zarafa
+app=Zarafa
 
 # Retrieve arguments
 path=$1
