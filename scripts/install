@@ -33,11 +33,6 @@ apt-ftparchive packages . | gzip -9c > Packages.gz && sudo sh -c 'echo "deb file
 
 # Create password
 db_pwd=$(openssl rand -hex 15)
-
-#Use 'zarafa' as database name and user
-db_user=$app
-
-#Initialize database and store mysql password for upgrade
 sudo yunohost app initdb $da_user -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
