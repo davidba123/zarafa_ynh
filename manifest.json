@@ -9,7 +9,7 @@
     "maintainer": {
         "name": "davidba123",
         "email": "mail@example.com",
-	"url": "http://github.com/davidba123/zarafa_ynh",
+	"url": "http://github.com/davidba123/zarafa_ynh"
     },
     "multi_instance": "false",
     "services": [
