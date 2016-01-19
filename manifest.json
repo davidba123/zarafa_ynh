@@ -8,7 +8,8 @@
     "license": "free",
     "maintainer": {
         "name": "davidba123",
-        "email": "mail@example.com"
+        "email": "mail@example.com",
+	"url": "http://github.com/davidba123/zarafa_ynh",
     },
     "multi_instance": "false",
     "services": [
@@ -19,6 +20,14 @@
     ],
     "arguments": {
         "install" : [
+	            {
+                "name": "domain",
+		"type": "domain",
+                "ask": {
+                    "en": "Choose a domain for Zarafa WebApp"
+                },
+                "example": "domain.org"
+            },
   
             {
                 "name": "path",
