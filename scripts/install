@@ -35,6 +35,7 @@ createrepo(){
 	cd /home/admin/packages
 	apt-ftparchive packages . | gzip -9c > Packages.gz \
 	&& sudo sh -c 'echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
+cd -
 }
 createrepo $DOWNLOADURL
 sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes \
