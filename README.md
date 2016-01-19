@@ -1,2 +1,2 @@
 # zarafa_ynh
-YunoHost for Zarafa Application
+Zarafa WebApp for YunoHost
