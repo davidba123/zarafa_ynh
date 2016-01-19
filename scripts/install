@@ -23,12 +23,11 @@ if [ $(uname -m) != "x86_64" ] ; then
 	exit 1
 fi 
 
-# TODO add domain check
 # Check domain/path availability
-sudo yunohost app checkurl $path -a $app \
+sudo yunohost app checkurl $domain$path -a $app \
 	|| (echo "Path not available: $path" && exit 1)
 
-# download and install zarafa packages
+# Download and install zarafa packages
 createrepo(){
 	DOWNLOADURL=$1
 	mkdir -p /home/admin/packages \
