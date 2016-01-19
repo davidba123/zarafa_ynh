@@ -23,9 +23,10 @@ if [ $(uname -m) != "x86_64" ] ; then
 	exit 1
 fi 
 
+# TODO add domain check
 # Check domain/path availability
-# sudo yunohost app checkurl $path -a $app \
-#	|| (echo "Path not available: $path" && exit 1)
+sudo yunohost app checkurl $path -a $app \
+	|| (echo "Path not available: $path" && exit 1)
 
 # download and install zarafa packages
 createrepo(){
@@ -42,18 +43,15 @@ createrepo $DOWNLOADURL
 sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes \
 zarafa-server zarafa-spooler zarafa-dagent
 
-# debug output to get current dir
-echo $PWD
-
 # Define database user and create password
 db_user=zarafa
 db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]' | sed -n 's/\(.\{24\}\).*/\1/p')
 
 #Initialize database and store mysql password for upgrade
 sudo yunohost app initdb $db_user -p $db_pwd
-# sudo yunohost app setting $app mysqlpwd -v $db_pwd
+sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# TODO set mysql password in server.cfg
+# set mysql password in server.cfg
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
 sudo cp ../conf/server.cfg /etc/zarafa/
 sudo cp ../conf/ldap.cfg /etc/zarafa/
@@ -63,9 +61,10 @@ final_path=/usr/share/zarafa-webapp
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Copy source files
-# TODO change location of WebApp to the value given in $path
+# TODO copy nginx.conf to domain subfolder
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$app.conf
 
 # Restart webserver
