@@ -12,7 +12,7 @@ domain=$1
 # Check distribution. Only Debian 7 & 8 are supported.
 read -d . VERSION < /etc/debian_version
 case "$VERSION" in
-	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-	debian-7.0-x86_64-supported.tar.gz
+	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-7.0-x86_64-supported.tar.gz
 	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-7.0/;;
 	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz
 	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-8.0/;;
