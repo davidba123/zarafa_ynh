@@ -7,6 +7,7 @@ app=zarafa
 
 # Retrieve arguments
 path=$1
+domain=$2
 
 # Check distribution. Only Debian 7 & 8 are supported.
 read -d . VERSION < /etc/debian_version
@@ -56,6 +57,8 @@ sudo yunohost app initdb $db_user -p $db_pwd
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
 sudo cp ../conf/server.cfg /etc/zarafa/
 sudo cp ../conf/ldap.cfg /etc/zarafa/
+
+final_path=/usr/share/zarafa-webapp
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
