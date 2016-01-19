@@ -12,8 +12,10 @@ domain=$1
 # Check distribution. Only Debian 7 & 8 are supported.
 read -d . VERSION < /etc/debian_version
 case "$VERSION" in
-	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-7.0-x86_64-supported.tar.gz;;
-	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz;;
+	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-	debian-7.0-x86_64-supported.tar.gz
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-7.0/;;
+	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-8.0/;;
 	*) echo "Your Distribution is not supported by this app!"; exit 1 ;;
 esac
 
@@ -30,17 +32,19 @@ sudo yunohost app checkurl $domain$path -a $app \
 # Download and install zarafa packages
 createrepo(){
 	DOWNLOADURL=$1
+	DOWNLOADWEBAPPURL=$2
 	mkdir -p /home/admin/packages \
 	&& wget --no-check-certificate --quiet \
 	$DOWNLOADURL -O- | tar xz -C /home/admin/packages --strip-components=1
 	cd /home/admin/packages
+	wget --quiet -p -r -nc -nd -l 1 -e robots=off -A deb --no-check-certificate $DOWNLOADWEBAPPURL
 	apt-ftparchive packages . | gzip -9c > Packages.gz \
 	&& sudo sh -c 'echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
 cd -
 }
-createrepo $DOWNLOADURL
+createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
 sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes \
-zarafa-server zarafa-spooler zarafa-dagent
+zarafa-server zarafa-spooler zarafa-dagent zarafa-webapp
 
 # Define database user and create password
 db_user=zarafa
@@ -68,3 +72,6 @@ sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 # Restart webserver
 sudo service nginx reload
 sudo yunohost app ssowatconf
+sudo service zarafa-server start
+sudo service zarafa-spooler start
+sudo service zarafa-dagent start
