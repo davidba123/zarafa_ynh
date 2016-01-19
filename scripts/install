@@ -6,8 +6,8 @@ set -e
 app=zarafa
 
 # Retrieve arguments
-path=$1
-domain=$2
+path=$2
+domain=$1
 
 # Check distribution. Only Debian 7 & 8 are supported.
 read -d . VERSION < /etc/debian_version
@@ -61,11 +61,10 @@ final_path=/usr/share/zarafa-webapp
 # Modify Nginx configuration file and copy it to Nginx conf directory
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
-# Copy source files
-# TODO copy nginx.conf to domain subfolder
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$app.conf
+
+# copy nginx.conf to domain subfolder
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Restart webserver
 sudo service nginx reload
