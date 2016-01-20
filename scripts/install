@@ -43,9 +43,8 @@ createrepo(){
 cd -
 }
 createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
-sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes
-sudo apt-get install zarafa-utils \
-zarafa-server zarafa-spooler zarafa-dagent zarafa-webapp zarafa-admin
+sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes \
+zarafa-server zarafa-spooler zarafa-dagent zarafa-webapp zarafa-utils
 
 # Define database user and create password
 db_user=zarafa
