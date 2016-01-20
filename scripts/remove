@@ -16,7 +16,7 @@ sudo apt-get remove -y -qq zarafa-server zarafa-spooler zarafa-dagent zarafa-web
 
 # Remove configuration files
 sudo rm -f /etc/nginx/conf.d/$domain/$app.conf
-sudo rm -f /etc/$app
+sudo rm -fr /etc/$app
 
 # Remove MySQL Database
 db_pwd=$(sudo cat /etc/yunohost/mysql)
