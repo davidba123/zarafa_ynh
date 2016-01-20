@@ -5,15 +5,19 @@ app=zarafa
 # Retrieve arguments
 db=zarafa
 db_user=zarafa
+domain=$1
+path=$2
 
-# TODO remove all zarafa packages
+# Remove all zarafa packages
+sudo apt-get remove -y -qq zarafa-server zarafa-spooler zarafa-dagent zarafa-webapp zarafa-utils
 
 # Remove configuration files
-sudo rm -f /etc/nginx/conf.d/$app.conf
+sudo rm -f /etc/nginx/conf.d/$domain/$app.conf
+sudo rm -f /etc/$app
 
-# If a database is used, remove it
+# Remove MySQL Database
 db_pwd=$(sudo cat /etc/yunohost/mysql)
-mysql -u root -p$db_pwd -e "DROP DATABASE $db ; DROP USER $db_user@localhost ;"
+mysql -u root -p $db_pwd -e "DROP DATABASE $db ; DROP USER $db_user@localhost ;"
 
 # Restart services
 sudo service nginx reload
