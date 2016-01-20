@@ -3,4 +3,46 @@
 # causes the shell to exit if any subcommand or pipeline returns a non-zero status
 set -e
 
-# TODO upgrade procedures after install is clear
+app=zarafa
+
+# Retrieve arguments
+domain=$1
+path=$2
+
+# Check distribution. Only Debian 7 & 8 are supported.
+read -d . VERSION < /etc/debian_version
+case "$VERSION" in
+	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-7.0-x86_64-supported.tar.gz
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-7.0/;;
+	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-8.0/;;
+	*) echo "Your Distribution is not supported by this app!"; exit 1 ;;
+esac
+
+# Download and install zarafa packages
+createrepo(){
+	DOWNLOADURL=$1
+	DOWNLOADWEBAPPURL=$2
+	mkdir -p /home/admin/packages \
+	&& wget --no-check-certificate --quiet \
+	$DOWNLOADURL -O- | tar xz -C /home/admin/packages --strip-components=1
+	cd /home/admin/packages
+	wget --quiet -p -r -nc -nd -l 1 -e robots=off -A deb --no-check-certificate $DOWNLOADWEBAPPURL
+	apt-ftparchive packages . | gzip -9c > Packages.gz \
+	&& sudo sh -c 'echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
+cd -
+}
+createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
+sudo apt-get update && sudo apt-get dist-upgrade --allow-unauthenticated --assume-yes
+
+# Modify Nginx configuration file and copy it to Nginx conf directory
+sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
+sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
+
+# copy nginx.conf to domain subfolder
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
+
+# Restart webserver
+sudo service nginx reload
+sudo yunohost app ssowatconf
+sudo service php5-fpm restart
