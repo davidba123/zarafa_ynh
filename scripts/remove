@@ -16,11 +16,13 @@ sudo apt-get remove -y -qq zarafa-*
 
 # Remove configuration files
 sudo rm -f /etc/nginx/conf.d/$domain/$app.conf
-sudo rm -fr /etc/$app
 
 # Remove MySQL Database
 db_pwd=$(sudo cat /etc/yunohost/mysql)
 mysql -u root -p$db_pwd -e "DROP DATABASE $db; DROP USER $db_user@localhost;"
+
+# Remove 
+sudo rm /etc/php5/fpm/conf.d/50-zarafa.ini
 
 # Restart services
 sudo service nginx reload
