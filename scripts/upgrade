@@ -29,7 +29,7 @@ createrepo(){
 cd -
 }
 createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
-sudo apt-get update && sudo apt-get dist-upgrade --allow-unauthenticated --assume-yes
+sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get dist-upgrade --allow-unauthenticated --assume-yes
 
 # Restart webserver
 sudo service nginx reload
