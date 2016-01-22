@@ -56,10 +56,11 @@ sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # Set mysql password in server.cfg
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
-sudo cp ../conf/server.cfg /etc/zarafa/
-sudo cp ../conf/ldap.cfg /etc/zarafa/
 sed -i "s@servercrt@/etc/yunohost/certs/$domain/crt.pem@g" ../conf/server.cfg
 sed -i "s@serverca@/etc/yunohost/certs/$domain/ca.pem@g" ../conf/server.cfg
+sudo cp ../conf/server.cfg /etc/zarafa/
+sudo cp ../conf/ldap.cfg /etc/zarafa/
+
 
 final_path=/usr/share/zarafa-webapp
 
