@@ -58,6 +58,7 @@ sudo yunohost app setting $app mysqlpwd -v $db_pwd
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
 sudo domain=$domain sh -c 'cd /etc/yunohost/certs/$domain/; cat crt.pem key.pem > combined.pem'
 sed -i "s@servercrt@/etc/yunohost/certs/$domain/combined.pem@g" ../conf/server.cfg
+sudo sh -c 'openssl rsa -in privkey.pem -pubout > key.pub'
 sudo mkdir /etc/zarafa/sslkeys
 sudo cp /etc/yunohost/certs/$domain/key.pub /etc/zarafa/sslkeys
 sed -i "s@serverca@/etc/yunohost/certs/$domain/ca.pem@g" ../conf/server.cfg
