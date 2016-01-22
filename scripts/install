@@ -61,7 +61,6 @@ sed -i "s@serverca@/etc/yunohost/certs/$domain/ca.pem@g" ../conf/server.cfg
 sudo cp ../conf/server.cfg /etc/zarafa/
 sudo cp ../conf/ldap.cfg /etc/zarafa/
 
-
 final_path=/usr/share/zarafa-webapp
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
