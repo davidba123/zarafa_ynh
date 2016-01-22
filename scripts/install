@@ -13,9 +13,9 @@ domain=$1
 read -d . VERSION < /etc/debian_version
 case "$VERSION" in
 	7) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-7.0-x86_64-supported.tar.gz
-	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-7.0/;;
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/beta/WebApp/2.1.2/RC2/debian-7.0/;;
 	8) DOWNLOADURL=http://download.zarafa.com/zarafa/drupal/download_platform.php?platform=final/7.2/7.2.1-51838/zcp-7.2.1-51838-debian-8.0-x86_64-supported.tar.gz
-	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/final/WebApp/2.1.1/debian-8.0/;;
+	DOWNLOADWEBAPPURL=http://download.zarafa.com/community/beta/WebApp/2.1.2/RC2/debian-8.0/;;
 	*) echo "Your Distribution is not supported by this app!"; exit 1 ;;
 esac
 
@@ -54,10 +54,12 @@ db_pwd=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d '[A-Za-z0-9]'
 sudo yunohost app initdb $db_user -p $db_pwd
 sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
-# set mysql password in server.cfg
+# Set mysql password in server.cfg
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
 sudo cp ../conf/server.cfg /etc/zarafa/
 sudo cp ../conf/ldap.cfg /etc/zarafa/
+sed -i "s@servercrt@/etc/yunohost/certs/$domain/crt.pem@g" ../conf/server.cfg
+sed -i "s@serverca@/etc/yunohost/certs/$domain/ca.pem@g" ../conf/server.cfg
 
 final_path=/usr/share/zarafa-webapp
 
@@ -65,10 +67,10 @@ final_path=/usr/share/zarafa-webapp
 sed -i "s@YNH_WWW_PATH@$path@g" ../conf/nginx.conf
 sed -i "s@YNH_WWW_ALIAS@$final_path/@g" ../conf/nginx.conf
 
-# PHP-MAPI anpassen
+# Adapt PHP-MAPI
 sudo ln -s /etc/php5/apache2/conf.d/zarafa.ini /etc/php5/fpm/conf.d/50-zarafa.ini
 
-# copy nginx.conf to domain subfolder
+# Copy nginx.conf to domain subfolder
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Restart webserver
