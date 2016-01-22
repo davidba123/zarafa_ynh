@@ -43,7 +43,7 @@ createrepo(){
 cd -
 }
 createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
-sudo apt-get update && RUNLEVEL=1 sudo apt-get install --allow-unauthenticated --assume-yes \
+sudo apt-get update && sudo RUNLEVEL=1 apt-get install --allow-unauthenticated --assume-yes \
 zarafa-server zarafa-spooler zarafa-dagent zarafa-webapp zarafa-utils
 
 # Define database user and create password
@@ -81,6 +81,8 @@ sudo service nginx reload
 sudo yunohost app ssowatconf
 sudo service php5-fpm restart
 sudo service zarafa-server start
+sudo service zarafa-spooler start
+sudo service zarafa-dagent start
 
 # Create public store
 sudo zarafa-admin -s
