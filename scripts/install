@@ -56,6 +56,7 @@ sudo yunohost app setting $app mysqlpwd -v $db_pwd
 
 # Set mysql password in server.cfg
 sed -i "s@mysqlpwd@$db_pwd@g" ../conf/server.cfg
+sudo sh -c 'cat /etc/yunohost/certs/$domain/ctr.pem /etc/yunohost/certs/$domain/key.pem > combined.pem
 sed -i "s@servercrt@/etc/yunohost/certs/$domain/crt.pem@g" ../conf/server.cfg
 sed -i "s@serverca@/etc/yunohost/certs/$domain/ca.pem@g" ../conf/server.cfg
 sudo cp ../conf/server.cfg /etc/zarafa/
