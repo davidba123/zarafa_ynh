@@ -23,7 +23,7 @@ esac
 if [ $(uname -m) != "x86_64" ] ; then
 	echo "Your architecture is not supported by this app!"
 	exit 1
-fi 
+fi
 
 # Check domain/path availability
 sudo yunohost app checkurl $domain$path -a $app \
@@ -69,7 +69,7 @@ sudo cp /etc/yunohost/certs/$domain/key.pub /etc/zarafa/sslkeys
 
 # generate admin.cfg or zarafa-admin
 sudo sh -c 'echo "server_socket=https://127.0.0.1:237/zarafa" > /etc/zarafa/admin.cfg'
-sudo sh -c 'echo "sslkey_file=/etc/yunohost/certs/$domain/combined.pem" >> /etc/zarafa/admin.cfg'
+sudo domain=$domain sh -c 'echo "sslkey_file=/etc/yunohost/certs/$domain/combined.pem" >> /etc/zarafa/admin.cfg'
 sudo sh -c 'echo "sslkey_pass=NULL" >> /etc/zarafa/admin.cfg'
 
 # Copy prepared config
