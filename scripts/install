@@ -40,7 +40,7 @@ createrepo(){
 	wget --quiet -p -r -nc -nd -l 1 -e robots=off -A deb --no-check-certificate $DOWNLOADWEBAPPURL
 	apt-ftparchive packages . | gzip -9c > Packages.gz \
 	&& sudo sh -c 'echo "deb file:/home/admin/packages ./" > /etc/apt/sources.list.d/zarafa.list'
-cd -
+	cd -
 }
 createrepo $DOWNLOADURL $DOWNLOADWEBAPPURL
 sudo apt-get update && sudo RUNLEVEL=1 apt-get install --allow-unauthenticated --assume-yes \
@@ -67,13 +67,18 @@ sudo domain=$domain sh -c 'cd /etc/yunohost/certs/$domain/ && openssl rsa -in ke
 sudo mkdir /etc/zarafa/sslkeys
 sudo cp /etc/yunohost/certs/$domain/key.pub /etc/zarafa/sslkeys
 
+# generate admin.cfg or zarafa-admin
+sudo sh -c 'echo "server_socket=https://127.0.0.1:237/zarafa" > /etc/zarafa/admin.cfg'
+sudo sh -c 'echo "sslkey_file=/etc/yunohost/certs/$domain/combined.pem" >> /etc/zarafa/admin.cfg'
+sudo sh -c 'echo "sslkey_pass=NULL" >> /etc/zarafa/admin.cfg'
+
 # Copy prepared config
 sudo cp ../conf/server.cfg /etc/zarafa/
 sudo cp ../conf/ldap.cfg /etc/zarafa/
 
 # set path and ssl for Zarafa WebApp
 sudo sed -i -e 's,file:///var/run/zarafa,'https://127.0.0.1:237/zarafa',g' /etc/zarafa/webapp/config.php
-sudo sed -i -e "/SSLCERT_FILE/ s,NULL,'/etc/yunohost/certs/$domain/key.pub',g" /etc/zarafa/webapp/config.php
+sudo sed -i -e "/SSLCERT_FILE/ s,NULL,'/etc/yunohost/certs/$domain/combined.pem',g" /etc/zarafa/webapp/config.php
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 webapp_localtion=/usr/share/zarafa-webapp
